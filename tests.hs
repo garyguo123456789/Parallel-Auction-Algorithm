@@ -16,7 +16,6 @@ type Assignment = Map.Map Bidder Item
 printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
 printAuctionResults matrix assignment = do
     putStrLn "Total Payoff Breakdown:"
-    -- changed to iterate over items instead of bidders
     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
                            | (item, bidder) <- Map.toList assignment]
     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
