@@ -1,4 +1,4 @@
-module Main (main) where
+module JacobiAuction (jacobiAuctionAlgorithm) where
 
 import Control.Parallel.Strategies
 import Control.Concurrent.Async (async, wait)
@@ -16,23 +16,23 @@ type PayoffMatrix = [[Double]]
 type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
-printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
-printAuctionResults matrix assignment = do
-    putStrLn "Assignment (Bidder -> Item):"
-    mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
-          (Map.toList assignment)
+-- printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
+-- printAuctionResults matrix assignment = do
+--     putStrLn "Assignment (Bidder -> Item):"
+--     mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
+--           (Map.toList assignment)
 
-    putStrLn "\nPayoff Matrix:"
-    mapM_ print matrix
+--     putStrLn "\nPayoff Matrix:"
+--     mapM_ print matrix
 
-    putStrLn "\nTotal Payoff Breakdown:"
-    let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
-                           | (bidder, item) <- Map.toList assignment]
-    mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
-          payoffBreakdown
+--     putStrLn "\nTotal Payoff Breakdown:"
+--     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
+--                            | (bidder, item) <- Map.toList assignment]
+--     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
+--           payoffBreakdown
 
-    let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
-    putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
+--     let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
+--     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
 jacobiAuctionAlgorithm :: Double -> PayoffMatrix -> Assignment
 jacobiAuctionAlgorithm epsilon inputMatrix = runSynchronizedAuction initialUnassigned initialPrices Map.empty
@@ -100,14 +100,14 @@ jacobiAuctionAlgorithm epsilon inputMatrix = runSynchronizedAuction initialUnass
     netPayoff :: Bidder -> Item -> Prices -> Double
     netPayoff i j prices = inputMatrix !! i !! j - (prices Map.! j)
 
-main :: IO ()
-main = do
-    let matrix = [[10.0, 5.0, 8.0],
-                  [7.0, 9.0, 5.0],
-                  [20.0, 7.0, 10.0]]
-        epsilon :: Double
-        epsilon = 0.1  -- Small positive value to break potential cycles
-        assignment_jacobi = jacobiAuctionAlgorithm epsilon matrix
+-- main :: IO ()
+-- main = do
+--     let matrix = [[10.0, 5.0, 8.0],
+--                   [7.0, 9.0, 5.0],
+--                   [20.0, 7.0, 10.0]]
+--         epsilon :: Double
+--         epsilon = 0.1  -- Small positive value to break potential cycles
+--         assignment_jacobi = jacobiAuctionAlgorithm epsilon matrix
 
-    putStrLn "Jacobi Auction Algorithm Results:"
-    printAuctionResults matrix assignment_jacobi
+--     putStrLn "Jacobi Auction Algorithm Results:"
+--     printAuctionResults matrix assignment_jacobi

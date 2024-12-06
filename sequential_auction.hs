@@ -1,4 +1,5 @@
-module Main (main) where
+module SequentialAuction (auctionAlgorithm, optimalAssignment) where
+  -- This allows us to access the functions in our test files
 
 import Data.List (maximumBy, permutations)
 import Data.Ord (comparing)
@@ -10,23 +11,23 @@ type PayoffMatrix = [[Double]]
 type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
-printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
-printAuctionResults matrix assignment = do
-    putStrLn "Assignment (Bidder -> Item):"
-    mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
-          (Map.toList assignment)
+-- printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
+-- printAuctionResults matrix assignment = do
+--     putStrLn "Assignment (Bidder -> Item):"
+--     mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
+--           (Map.toList assignment)
 
-    putStrLn "\nPayoff Matrix:"
-    mapM_ print matrix
+--     putStrLn "\nPayoff Matrix:"
+--     mapM_ print matrix
 
-    putStrLn "\nTotal Payoff Breakdown:"
-    let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
-                           | (bidder, item) <- Map.toList assignment]
-    mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
-          payoffBreakdown
+--     putStrLn "\nTotal Payoff Breakdown:"
+--     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
+--                            | (bidder, item) <- Map.toList assignment]
+--     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
+--           payoffBreakdown
 
-    let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
-    putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
+--     let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
+--     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
 auctionAlgorithm :: Double -> PayoffMatrix -> Assignment
 auctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.empty
@@ -83,17 +84,17 @@ optimalAssignment matrix = maximumBy (comparing totalPayoff) assignments
     assignments = map (Map.fromList . zip bidders) (permutations bidders)
     totalPayoff assignment = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
 
-main :: IO ()
-main = do
-    let matrix = [[10.0, 5.0, 8.0],
-                  [7.0, 9.0, 5.0],
-                  [20.0, 7.0, 10.0]]
-        epsilon :: Double
-        epsilon = 0.1  -- Small positive value to break potential cycles
-        assignment_auction_algo = auctionAlgorithm epsilon matrix
-        assignment_optimal = optimalAssignment matrix
+-- main :: IO ()
+-- main = do
+--     let matrix = [[10.0, 5.0, 8.0],
+--                   [7.0, 9.0, 5.0],
+--                   [20.0, 7.0, 10.0]]
+--         epsilon :: Double
+--         epsilon = 0.1  -- Small positive value to break potential cycles
+--         assignment_auction_algo = auctionAlgorithm epsilon matrix
+--         assignment_optimal = optimalAssignment matrix
 
-    putStrLn "Auction Algorithm Results:"
-    printAuctionResults matrix assignment_auction_algo
-    putStrLn "\nOptimal Assignment Results:"
-    printAuctionResults matrix assignment_optimal
+--     putStrLn "Auction Algorithm Results:"
+--     printAuctionResults matrix assignment_auction_algo
+--     putStrLn "\nOptimal Assignment Results:"
+--     printAuctionResults matrix assignment_optimal

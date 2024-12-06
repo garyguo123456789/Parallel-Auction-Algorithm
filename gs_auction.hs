@@ -1,4 +1,5 @@
-module Main (main) where
+module GSAuction (gsAuctionAlgorithm) where
+  -- allow exporting for testing
 
 import Control.Parallel.Strategies
 import qualified Data.Map as Map
@@ -13,23 +14,23 @@ type Item = Int
 type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
-printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
-printAuctionResults matrix assignment = do
-    putStrLn "Assignment (Bidder -> Item):"
-    mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
-          (Map.toList assignment)
+-- printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
+-- printAuctionResults matrix assignment = do
+--     putStrLn "Assignment (Bidder -> Item):"
+--     mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
+--           (Map.toList assignment)
 
-    putStrLn "\nPayoff Matrix:"
-    mapM_ print matrix
+--     putStrLn "\nPayoff Matrix:"
+--     mapM_ print matrix
 
-    putStrLn "\nTotal Payoff Breakdown:"
-    let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
-                           | (bidder, item) <- Map.toList assignment]
-    mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
-          payoffBreakdown
+--     putStrLn "\nTotal Payoff Breakdown:"
+--     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
+--                            | (bidder, item) <- Map.toList assignment]
+--     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
+--           payoffBreakdown
 
-    let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
-    putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
+--     let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
+--     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
 gsAuctionAlgorithm :: Double -> PayoffMatrix -> Assignment
 gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.empty
@@ -109,14 +110,14 @@ gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.
         goChunks q r xs = let (chunk, rest) = splitAt (q + if r > 0 then 1 else 0) xs
                           in chunk : goChunks q (max 0 (r - 1)) rest
 
-main :: IO ()
-main = do
-    let matrix = [[10.0, 5.0, 8.0],
-                  [7.0, 9.0, 5.0],
-                  [20.0, 7.0, 10.0]]
-        epsilon :: Double
-        epsilon = 0.1  -- Small positive value to break potential cycles
-        assignment_gs = gsAuctionAlgorithm epsilon matrix
+-- main :: IO ()
+-- main = do
+--     let matrix = [[10.0, 5.0, 8.0],
+--                   [7.0, 9.0, 5.0],
+--                   [20.0, 7.0, 10.0]]
+--         epsilon :: Double
+--         epsilon = 0.1  -- Small positive value to break potential cycles
+--         assignment_gs = gsAuctionAlgorithm epsilon matrix
 
-    putStrLn "Gauss-Seidel Auction Algorithm Results:"
-    printAuctionResults matrix assignment_gs
+--     putStrLn "Gauss-Seidel Auction Algorithm Results:"
+--     printAuctionResults matrix assignment_gs
