@@ -12,9 +12,10 @@ import qualified Data.Map as Map
 
 type Bidder = Int
 type Item = Int
-type PayoffMatrix = [[Double]]
 type Prices = Map.Map Item Double
-type Assignment = Map.Map Bidder Item
+type Assignment = Map.Map Item Bidder -- changed mapping from item to bidder
+type PayoffMatrix = [[Double]]
+
 
 -- printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
 -- printAuctionResults matrix assignment = do

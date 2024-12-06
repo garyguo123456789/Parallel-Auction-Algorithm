@@ -102,8 +102,8 @@ main = do
     putStrLn "\n------- sequential tests -------"
     mapM_ (uncurry (runTest auctionAlgorithm)) matrices -- vscode recommended "uncurry"
 
-    -- putStrLn "\n------- jacobi tests -------"
-    -- mapM_ (uncurry (runTest auctionAlgorithm)) matrices
+    putStrLn "\n------- jacobi tests -------"
+    mapM_ (uncurry (runTest auctionAlgorithm)) matrices
 
-    -- putStrLn "\n------- GS tests -------"
-    -- mapM_ (uncurry (runTest auctionAlgorithm)) matrices
+    putStrLn "\n------- GS tests -------"
+    mapM_ (uncurry (runTest auctionAlgorithm)) matrices

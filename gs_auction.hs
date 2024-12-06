@@ -14,29 +14,11 @@ type Item = Int
 type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
--- printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
--- printAuctionResults matrix assignment = do
---     putStrLn "Assignment (Bidder -> Item):"
---     mapM_ (\(bidder, item) -> putStrLn $ "Bidder " ++ show bidder ++ " -> Item " ++ show item)
---           (Map.toList assignment)
-
---     putStrLn "\nPayoff Matrix:"
---     mapM_ print matrix
-
---     putStrLn "\nTotal Payoff Breakdown:"
---     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
---                            | (bidder, item) <- Map.toList assignment]
---     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
---           payoffBreakdown
-
---     let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
---     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
 gsAuctionAlgorithm :: Double -> PayoffMatrix -> Assignment
 gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.empty
   where
     numItems = length (head inputMatrix)
-
     initialUnassigned = [0 .. length inputMatrix - 1]
     initialPrices = Map.fromList [(j, 0) | j <- [0 .. numItems - 1]]
 
@@ -59,17 +41,12 @@ gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.
         -- Handle previous assignment of the item
         (newAssignment, remainingUnassigned) =
           case Map.lookup bestItem assignment of
-            -- If the item was previously assigned, reassign it
             Just prevBidder ->
-              let updatedAssignment = Map.insert i bestItem (Map.delete prevBidder assignment)
-                  updatedUnassigned = if prevBidder /= i
-                                      then prevBidder : unassignedBidders
-                                      else unassignedBidders
+              let updatedAssignment = Map.insert bestItem i assignment
+                  updatedUnassigned = prevBidder : unassignedBidders
               in (updatedAssignment, updatedUnassigned)
-            -- Otherwise, simply assign the item
             Nothing ->
-              (Map.insert i bestItem assignment, unassignedBidders)
-
+              (Map.insert bestItem i assignment, unassignedBidders)
       in go remainingUnassigned updatedPrices newAssignment
 
     -- Calculate net payoff for a bidder for a specific item
@@ -89,12 +66,8 @@ gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.
     mergeResults :: [(Item, Double, Maybe Double)] -> Double -> (Item, Double, Double)
     mergeResults results epsilon =
       let
-        -- Extract all payoffs with corresponding items
-        allPayoffsWithItems = concatMap (\(item, p, ms) -> [(item, p), (item, fromMaybe (- (1 / 0)) ms)]) results
-        -- Sort payoffs by value in descending order, keeping track of items
-        sortedPayoffsWithItems = sortBy (comparing (Data.Ord.Down . snd)) allPayoffsWithItems
-
-        -- Extract max and second max
+        allPayoffsWithItems = concatMap (\(item, p, ms) -> [(item, p), (item, fromMaybe (-1 / 0) ms)]) results
+        sortedPayoffsWithItems = sortBy (comparing (Down . snd)) allPayoffsWithItems
         (bestItem, maxPayoff) = head sortedPayoffsWithItems
         secondMaxPayoff = if length sortedPayoffsWithItems > 1
                           then snd (sortedPayoffsWithItems !! 1)
@@ -109,15 +82,3 @@ gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.
         goChunks _ 0 [] = []
         goChunks q r xs = let (chunk, rest) = splitAt (q + if r > 0 then 1 else 0) xs
                           in chunk : goChunks q (max 0 (r - 1)) rest
-
--- main :: IO ()
--- main = do
---     let matrix = [[10.0, 5.0, 8.0],
---                   [7.0, 9.0, 5.0],
---                   [20.0, 7.0, 10.0]]
---         epsilon :: Double
---         epsilon = 0.1  -- Small positive value to break potential cycles
---         assignment_gs = gsAuctionAlgorithm epsilon matrix
-
---     putStrLn "Gauss-Seidel Auction Algorithm Results:"
---     printAuctionResults matrix assignment_gs
