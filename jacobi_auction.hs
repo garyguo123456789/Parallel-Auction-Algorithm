@@ -35,8 +35,8 @@ type PayoffMatrix = [[Double]]
 --     let totalPayoff = sum [matrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
 --     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
-jacobiAuctionAlgorithm :: Double -> PayoffMatrix -> Assignment
-jacobiAuctionAlgorithm epsilon inputMatrix = runSynchronizedAuction initialUnassigned initialPrices Map.empty
+jacobiAuctionAlgorithm :: Double -> PayoffMatrix -> Double
+jacobiAuctionAlgorithm epsilon inputMatrix = totalPayoff
   where
     numItems = length (head inputMatrix)
     initialUnassigned = [0 .. length inputMatrix - 1]
@@ -100,6 +100,9 @@ jacobiAuctionAlgorithm epsilon inputMatrix = runSynchronizedAuction initialUnass
     -- Calculate net payoff for a bidder for a specific item
     netPayoff :: Bidder -> Item -> Prices -> Double
     netPayoff i j prices = inputMatrix !! i !! j - (prices Map.! j)
+
+    assignment = runSynchronizedAuction initialUnassigned initialPrices Map.empty
+    totalPayoff = sum [inputMatrix !! bidder !! item | (bidder, item) <- Map.toList assignment]
 
 -- main :: IO ()
 -- main = do
