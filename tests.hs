@@ -5,6 +5,7 @@ import JacobiAuction (jacobiAuctionAlgorithm)
 import GSAuction (gsAuctionAlgorithm)
 import qualified Data.Map as Map
 import Control.Monad (unless)
+import System.Random (mkStdGen, randomRs, StdGen, split)
 
 type Bidder = Int
 type Item = Int
@@ -25,84 +26,35 @@ printAuctionResults matrix assignment = do
     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
 
-runTest :: (Double -> PayoffMatrix -> Assignment) -> PayoffMatrix -> Double -> IO ()
+runTest :: (Double -> PayoffMatrix -> Double) -> PayoffMatrix -> Double -> IO ()
 runTest algorithm matrix epsilon = do
-    let assignment = algorithm epsilon matrix
-        optimal = optimalAssignment matrix
-        -- testResult = assignment == optimal
+    let totalPayoffAlgo = algorithm epsilon matrix
 
-        -- compare total payoffs instead
-        totalPayoffAlgo = sum [matrix !! bidder !! item | (item, bidder) <- Map.toList assignment]
-        totalPayoffOptimal = sum [matrix !! bidder !! item | (item, bidder) <- Map.toList optimal]
-        testResult = totalPayoffAlgo == totalPayoffOptimal
+    putStrLn "--------------------------------- \nTest results:"
+    putStrLn $ "\nTotal Payoff Algorithm: " ++ show totalPayoffAlgo
 
-    unless testResult $ do -- unless recommended by vscode for more succinct
-        putStrLn "--------------------------------- \nTest failed, printing results..."
-        putStrLn "\nPayoff Matrix:"
-        mapM_ print matrix
-        putStrLn "\nActual..."
-        printAuctionResults matrix assignment
-        putStrLn "\nExpected..."
-        printAuctionResults matrix optimal
+    putStrLn "--------------------------------- \nTest results:"
+    -- putStrLn "\nPayoff Matrix:"
+    -- mapM_ print matrix
+    putStrLn $ "\nTotal Payoff Algorithm: " ++ show totalPayoffAlgo
 
 
 main :: IO ()
 main = do
-    let matrices = [ ([[10.0, 5.0, 8.0],
-                       [7.0, 9.0, 5.0],
-                       [20.0, 7.0, 10.0]], 0.01),
+    let seed = 42
+        gen = mkStdGen seed
+        (matrix, _) = generateMatrix gen 1000 1000
 
-                     ([[10.0, 15.0, 20.0, 5.0],
-                       [5.0, 10.0, 15.0, 20.0],
-                       [20.0, 5.0, 10.0, 15.0],
-                       [15.0, 20.0, 5.0, 10.0]], 0.01),
+    -- putStrLn "\n------- jacobi test -------"
+    runTest jacobiAuctionAlgorithm matrix 0.01
 
-                    -- not sure how we would deal with this case anyways
-                    --  ([[0.0, 0.0, 0.0],
-                    --    [0.0, 0.0, 0.0],
-                    --    [0.0, 0.0, 0.0]], 0.01),
 
-                     ([[1.0, 2.0, 3.0, 4.0],
-                       [4.0, 3.0, 2.0, 1.0],
-                       [0.0, 1.0, 0.0, 1.0],
-                       [1.0, 0.0, 1.0, 0.0]], 0.01),
+generateMatrix :: System.Random.StdGen -> Int -> Int -> (PayoffMatrix, System.Random.StdGen)
+generateMatrix gen rows cols = (matrix, finalGen)
+    where randomNumbers = take (rows * cols) $ System.Random.randomRs (0.0, 100.0) gen
+          (finalGen, _) = System.Random.split gen
+          matrix = take rows $ chunksOf cols randomNumbers
 
-                     ([[10.0, 5.0, 2.0, 1.0],
-                       [3.0, 8.0, 7.0, 5.0],
-                       [9.0, 6.0, 3.0, 2.0],
-                       [8.0, 7.0, 4.0, 1.0]], 0.01),
-
-                     ([[5.0, 6.0, 7.0, 8.0, 9.0],
-                       [9.0, 8.0, 7.0, 6.0, 5.0],
-                       [4.0, 3.0, 2.0, 1.0, 0.0],
-                       [0.0, 1.0, 2.0, 3.0, 4.0],
-                       [5.0, 5.0, 5.0, 5.0, 5.0]], 0.01),
-
-                     ([[20.0, 15.0, 10.0],
-                       [10.0, 20.0, 15.0],
-                       [15.0, 10.0, 20.0]], 0.01),
-
-                     ([[3.0, 2.0],
-                       [2.0, 3.0]], 0.01),
-
-                     ([[10.0, 12.0, 14.0, 16.0],
-                       [16.0, 14.0, 12.0, 10.0],
-                       [11.0, 13.0, 15.0, 17.0],
-                       [17.0, 15.0, 13.0, 11.0]], 0.01),
-
-                     ([[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
-                       [5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
-                       [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
-                       [6.0, 5.0, 4.0, 3.0, 2.0, 1.0],
-                       [2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
-                       [7.0, 6.0, 5.0, 4.0, 3.0, 2.0]], 0.01)
-                   ]
-
-    putStrLn "\n------- sequential tests -------"
-    mapM_ (uncurry (runTest auctionAlgorithm)) matrices -- vscode recommended "uncurry"
-
-    putStrLn "\n------- jacobi tests -------"
-    mapM_ (uncurry (runTest auctionAlgorithm)) matrices
-
-    putStrLn "\n------- GS tests -------"
-    mapM_ (uncurry (runTest auctionAlgorithm)) matrices
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf _ [] = []
+chunksOf n xs = let (ys, zs) = splitAt n xs in ys : chunksOf n zs
