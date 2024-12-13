@@ -1,12 +1,10 @@
 module GSAuction (gsAuctionAlgorithm) where
-  -- allow exporting for testing
 
 import Control.Parallel.Strategies
 import qualified Data.Map as Map
 import Data.List
 import Data.Maybe
 import Data.Ord (comparing, Down(..))
-import Debug.Trace
 
 type PayoffMatrix = [[Double]]
 type Bidder = Int
@@ -14,14 +12,18 @@ type Item = Int
 type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
-
-gsAuctionAlgorithm :: Double -> PayoffMatrix -> Assignment
-gsAuctionAlgorithm epsilon inputMatrix = go initialUnassigned initialPrices Map.empty
+gsAuctionAlgorithm :: Double -> PayoffMatrix -> (Assignment, Double)
+gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
   where
     numItems = length (head inputMatrix)
     initialUnassigned = [0 .. length inputMatrix - 1]
     initialPrices = Map.fromList [(j, 0) | j <- [0 .. numItems - 1]]
 
+    -- get the resulting assignment and also the total payoff, to return
+    finalAssignment = go initialUnassigned initialPrices Map.empty
+    totalPayoff = sum [inputMatrix !! bidder !! item | (bidder, item) <- Map.toList finalAssignment]
+
+    -- Auction process
     go :: [Bidder] -> Prices -> Assignment -> Assignment
     go [] _ assignment = assignment
     go (i : unassignedBidders) prices assignment =
