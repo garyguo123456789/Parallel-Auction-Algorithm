@@ -1,7 +1,7 @@
 module JacobiAuction (jacobiAuctionAlgorithm) where
 
-import Control.Parallel.Strategies
-import Data.List (maximumBy)
+import Control.Parallel.Strategies ( parList, rdeepseq, using )
+import Data.List (maximumBy, foldl')
 import Data.Ord (comparing)
 import qualified Data.Map as Map
 

@@ -14,29 +14,21 @@ type Prices = Map.Map Item Double
 type Assignment = Map.Map Bidder Item
 
 
-printAuctionResults :: PayoffMatrix -> Assignment -> IO ()
-printAuctionResults matrix assignment = do
+printAuctionResults :: PayoffMatrix -> Assignment -> Double -> IO ()
+printAuctionResults matrix assignment totalPayoff = do
     putStrLn "Total Payoff Breakdown:"
     let payoffBreakdown = [(bidder, item, matrix !! bidder !! item)
                            | (item, bidder) <- Map.toList assignment]
     mapM_ (\(b, i, p) -> putStrLn $ "Bidder " ++ show b ++ " -> Item " ++ show i ++ ": " ++ show p)
           payoffBreakdown
-
-    let totalPayoff = sum [matrix !! bidder !! item | (item, bidder) <- Map.toList assignment]
     putStrLn $ "\nTotal Payoff: " ++ show totalPayoff
 
-
-runTest :: (Double -> PayoffMatrix -> Double) -> PayoffMatrix -> Double -> IO ()
+runTest :: (Double -> PayoffMatrix -> (Assignment, Double)) -> PayoffMatrix -> Double -> IO ()
 runTest algorithm matrix epsilon = do
-    let totalPayoffAlgo = algorithm epsilon matrix
+    let (assignment, totalPayoff) = algorithm epsilon matrix
 
     putStrLn "--------------------------------- \nTest results:"
-    putStrLn $ "\nTotal Payoff Algorithm: " ++ show totalPayoffAlgo
-
-    putStrLn "--------------------------------- \nTest results:"
-    -- putStrLn "\nPayoff Matrix:"
-    -- mapM_ print matrix
-    putStrLn $ "\nTotal Payoff Algorithm: " ++ show totalPayoffAlgo
+    print totalPayoff
 
 
 main :: IO ()
@@ -44,11 +36,20 @@ main = do
     let seed = 42
         gen = mkStdGen seed
         (matrix, _) = generateMatrix gen 1000 1000
+    
+    -- matrix `seq` return ()
 
-    -- putStrLn "\n------- jacobi test -------"
+    putStrLn "\n------- sequential test -------"
     runTest jacobiAuctionAlgorithm matrix 0.01
 
+    -- putStrLn "\n------- jacobi test -------"
+    -- runTest jacobiAuctionAlgorithm matrix 0.01
 
+    -- putStrLn "\n------- gs test -------"
+    -- runTest gsAuctionAlgorithm matrix 0.01
+
+
+-- Generate a random payoff matrix
 generateMatrix :: System.Random.StdGen -> Int -> Int -> (PayoffMatrix, System.Random.StdGen)
 generateMatrix gen rows cols = (matrix, finalGen)
     where randomNumbers = take (rows * cols) $ System.Random.randomRs (0.0, 100.0) gen
