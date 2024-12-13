@@ -1,6 +1,6 @@
 module JacobiAuction (jacobiAuctionAlgorithm) where
 
-import Control.Parallel.Strategies ( parList, rdeepseq, using )
+import Control.Parallel.Strategies (parList, rdeepseq, using)
 import Data.List (maximumBy, foldl')
 import Data.Ord (comparing)
 import qualified Data.Map as Map
@@ -62,7 +62,7 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
         newAssignment =
           foldl' (\acc (item, bidder) -> Map.insert item bidder acc) assignment (Map.toList resolvedAssignments)
         unassignedBidders =
-          [bidder | (_, bidders) <- Map.toList groupedBids, (bidder, _) <- bidders, not (Map.member bidder newAssignment)]
+          [bidder | (_, bidders) <- Map.toList groupedBids, (bidder, _) <- bidders, bidder `notElem` Map.elems newAssignment]
       in (newAssignment, unassignedBidders)
 
     -- Update prices for items based on the winning bids
