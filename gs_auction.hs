@@ -21,7 +21,7 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
 
     -- get the resulting assignment and also the total payoff, to return
     finalAssignment = go initialUnassigned initialPrices Map.empty
-    totalPayoff = sum [inputMatrix !! bidder !! item | (bidder, item) <- Map.toList finalAssignment]
+    totalPayoff = sum [inputMatrix !! bidder !! item | (item, bidder) <- Map.toList finalAssignment]
 
     -- Auction process
     go :: [Bidder] -> Prices -> Assignment -> Assignment
