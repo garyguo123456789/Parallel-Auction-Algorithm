@@ -22,7 +22,6 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
     (finalAssignment, _) = runSynchronizedAuction initialUnassigned initialPrices Map.empty
     totalPayoff = sum [inputMatrix !! bidder !! item | (item, bidder) <- Map.toList finalAssignment]
 
-    -- auction process
     runSynchronizedAuction :: [Bidder] -> Prices -> Assignment -> (Assignment, [Bidder])
     runSynchronizedAuction [] _ assignment = (assignment, [])
     runSynchronizedAuction unassignedBidders prices assignment =
@@ -35,7 +34,6 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
         then (newAssignment, newUnassigned)
         else runSynchronizedAuction newUnassigned updatedPrices newAssignment
 
-    -- synchronized parallel bidding
     synchronizedParallelBidding :: [Bidder] -> Prices -> [(Bidder, Item, Double)]
     synchronizedParallelBidding bidders prices =
       map (bestBid prices) bidders `using` parList rdeepseq
