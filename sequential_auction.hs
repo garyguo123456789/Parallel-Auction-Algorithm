@@ -29,20 +29,20 @@ auctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
     go [] _ assignment = assignment
     go (i : unassignedBidders) prices assignment =
       let
-        -- Calculate net payoffs for all items
+        -- calculate net payoffs for all items
         netPayoffs = [(j, netPayoff i j prices) | j <- [0 .. numItems - 1]]
 
-        -- Find the best and second-best items
+        -- find the best and second-best items
         (bestItem, maxPayoff) = maximumBy (comparing snd) netPayoffs
         secondMaxPayoff = if length netPayoffs > 1
                           then maximum [ p | (j,p) <- netPayoffs, j /= bestItem ]
                           else maxPayoff - epsilon
 
-        -- Update the price of the best item
+        -- update the price of the best item
         newPrice = (prices Map.! bestItem) + (maxPayoff - secondMaxPayoff + epsilon)
         updatedPrices = Map.insert bestItem newPrice prices
 
-        -- Handle previous assignment of the item
+        -- handle previous assignment of the item
         (newAssignment, remainingUnassigned) =
           case Map.lookup bestItem assignment of
             Just prevBidder ->
@@ -57,7 +57,7 @@ auctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
     netPayoff :: Bidder -> Item -> Prices -> Double
     netPayoff i j prices = inputMatrix !! i !! j - (prices Map.! j)
 
--- Find the optimal assignment by brute force (adjusted to return item->bidder)
+-- find the optimal assignment by brute force (adjusted to return item->bidder)
 optimalAssignment :: PayoffMatrix -> Assignment
 optimalAssignment matrix = maximumBy (comparing totalPayoff) assignments
   where
