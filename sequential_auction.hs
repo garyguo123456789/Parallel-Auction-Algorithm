@@ -7,7 +7,9 @@ import qualified Data.Map as Map
 type Bidder = Int
 type Item = Int
 type Prices = Map.Map Item Double
-type Assignment = Map.Map Item Bidder -- mapping from item to bidder
+
+-- item is the key, bidder is the value, for consistency with the algorithm from the paper
+type Assignment = Map.Map Item Bidder 
 type PayoffMatrix = [[Double]]
 
 

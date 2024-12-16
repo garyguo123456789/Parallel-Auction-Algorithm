@@ -23,24 +23,23 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
     finalAssignment = go initialUnassigned initialPrices Map.empty
     totalPayoff = sum [inputMatrix !! bidder !! item | (item, bidder) <- Map.toList finalAssignment]
 
-    -- Auction process
     go :: [Bidder] -> Prices -> Assignment -> Assignment
     go [] _ assignment = assignment
     go (i : unassignedBidders) prices assignment =
       let
-        -- Calculate net payoffs for all items
+        -- calculate net payoffs for all items
         netPayoffs = [(j, netPayoff i j prices) | j <- [0 .. numItems - 1]]
 
-        -- Parallelize the search for best and second-best items
+        -- parallelize the search for best and second-best items
         partitions = chunkItems 4 netPayoffs
         partialResults = parMap rpar findBestAndSecond partitions
         (bestItem, maxPayoff, secondMaxPayoff) = mergeResults partialResults epsilon
 
-        -- Update price according to the auction algorithm description
+        -- update price according to the auction algorithm description
         newPrice = (prices Map.! bestItem) + (maxPayoff - secondMaxPayoff + epsilon)
         updatedPrices = Map.insert bestItem newPrice prices
 
-        -- Handle previous assignment of the item
+        -- handle previous assignment of the item
         (newAssignment, remainingUnassigned) =
           case Map.lookup bestItem assignment of
             Just prevBidder ->
@@ -51,11 +50,11 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
               (Map.insert bestItem i assignment, unassignedBidders)
       in go remainingUnassigned updatedPrices newAssignment
 
-    -- Calculate net payoff for a bidder for a specific item
+    -- calculate net payoff for a bidder for a specific item
     netPayoff :: Bidder -> Item -> Prices -> Double
     netPayoff i j prices = inputMatrix !! i !! j - (prices Map.! j)
 
-    -- Find the best and second-best items in a partition
+    -- find the best and second-best items in a partition
     findBestAndSecond :: [(Item, Double)] -> (Item, Double, Maybe Double)
     findBestAndSecond payoffs =
       let (bestItem, maxPayoff) = maximumBy (comparing snd) payoffs
@@ -64,7 +63,7 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
                             else Nothing
       in (bestItem, maxPayoff, secondMaxPayoff)
 
-    -- Merge results from all partitions
+    -- merge results from all partitions
     mergeResults :: [(Item, Double, Maybe Double)] -> Double -> (Item, Double, Double)
     mergeResults results epsilon =
       let
@@ -76,7 +75,7 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
                           else maxPayoff - epsilon
       in (bestItem, maxPayoff, secondMaxPayoff)
 
-    -- Split items into equal-sized chunks for parallel processing
+    -- split items into equal-sized chunks for parallel processing
     chunkItems :: Int -> [a] -> [[a]]
     chunkItems n items = let (q, r) = length items `quotRem` n
                          in goChunks q r items

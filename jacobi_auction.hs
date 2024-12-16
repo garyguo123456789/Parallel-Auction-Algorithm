@@ -8,7 +8,7 @@ import qualified Data.Map as Map
 type Bidder = Int
 type Item = Int
 type Prices = Map.Map Item Double
-type Assignment = Map.Map Item Bidder -- Mapping from item to bidder
+type Assignment = Map.Map Item Bidder -- mapping from item to bidder (to correspond to implementation in paper)
 type PayoffMatrix = [[Double]]
 
 jacobiAuctionAlgorithm :: Double -> PayoffMatrix -> (Assignment, Double)
@@ -22,7 +22,7 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
     (finalAssignment, _) = runSynchronizedAuction initialUnassigned initialPrices Map.empty
     totalPayoff = sum [inputMatrix !! bidder !! item | (item, bidder) <- Map.toList finalAssignment]
 
-    -- Auction process
+    -- auction process
     runSynchronizedAuction :: [Bidder] -> Prices -> Assignment -> (Assignment, [Bidder])
     runSynchronizedAuction [] _ assignment = (assignment, [])
     runSynchronizedAuction unassignedBidders prices assignment =
@@ -35,12 +35,12 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
         then (newAssignment, newUnassigned)
         else runSynchronizedAuction newUnassigned updatedPrices newAssignment
 
-    -- Synchronized parallel bidding
+    -- synchronized parallel bidding
     synchronizedParallelBidding :: [Bidder] -> Prices -> [(Bidder, Item, Double)]
     synchronizedParallelBidding bidders prices =
       map (bestBid prices) bidders `using` parList rdeepseq
 
-    -- Find the best item and second-best payoff for a bidder
+    -- find the best item and second-best payoff for a bidder
     bestBid :: Prices -> Bidder -> (Bidder, Item, Double)
     bestBid prices i =
       let
@@ -52,7 +52,8 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
         bidPrice = (prices Map.! bestItem) + (maxPayoff - secondMaxPayoff + epsilon)
       in (i, bestItem, bidPrice)
 
-    -- Resolve conflicts: only one bidder can win an item
+    -- resolve conflicts: only one bidder can win an item
+    -- paper states that this will still result in the optimal assignment, even if prices are outdated
     resolveConflicts :: [(Bidder, Item, Double)] -> Assignment -> (Assignment, [Bidder])
     resolveConflicts bids assignment =
       let
@@ -65,12 +66,12 @@ jacobiAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
           [bidder | (_, bidders) <- Map.toList groupedBids, (bidder, _) <- bidders, bidder `notElem` Map.elems newAssignment]
       in (newAssignment, unassignedBidders)
 
-    -- Update prices for items based on the winning bids
+    -- update prices for items based on the winning bids
     updatePrices :: Prices -> (Bidder, Item, Double) -> Prices
     updatePrices prices (_, item, bidPrice) =
       let currentPrice = Map.findWithDefault 0 item prices
       in Map.insert item (max currentPrice bidPrice) prices
 
-    -- Calculate net payoff for a bidder for a specific item
+    -- calculate net payoff for a bidder for a specific item
     netPayoff :: Bidder -> Item -> Prices -> Double
     netPayoff i j prices = inputMatrix !! i !! j - (prices Map.! j)
