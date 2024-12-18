@@ -31,7 +31,8 @@ gsAuctionAlgorithm epsilon inputMatrix = (finalAssignment, totalPayoff)
         netPayoffs = [(j, netPayoff i j prices) | j <- [0 .. numItems - 1]]
 
         -- parallelize the search for best and second-best items
-        partitions = chunkItems 4 netPayoffs
+        partitions = chunkItems 6400 netPayoffs -- change this number iteratively to find the best size chunk
+        -- for chunks: tested 2, 4, 8, 20, 100, 400, 1600, 6400
         partialResults = parMap rpar findBestAndSecond partitions
         (bestItem, maxPayoff, secondMaxPayoff) = mergeResults partialResults epsilon
 
